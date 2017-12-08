@@ -71,11 +71,11 @@ int main (int argc, char* argv[]) {
             }
         }
         for(int i=1;i<size;i++){
-            mpi_recv(&recv_sum, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+            MPI_Recv(&recv_sum, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
             sum = sum + recv_sum;
         }
     }else{
-        mpi_recv(recv_sum, delta, 0, 0 ,);
+        MPI_Recv(recv_sum, delta, 0, 0 ,);
         sum = 0;
         for(i=0;i<n;i++){
             float x = (a + (i + 0.5) * ((b-a)/n));
@@ -94,8 +94,7 @@ int main (int argc, char* argv[]) {
         MPI_Recv(&sum, 1, MPI_INT, 0 ,0 , MPI_COMM_WORLD);
     }
     MPI_Finalize();
-    std::chrono::time_point<std::chrono::system_clock> endTime = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds = endTime-startTime;
+    
     
     
     
