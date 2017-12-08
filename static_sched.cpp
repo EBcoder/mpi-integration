@@ -1,8 +1,8 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
-#include <chrono>
 #include <mpi.h>
+#include <chrono>
 
 
 
@@ -54,8 +54,7 @@ int main (int argc, char* argv[]) {
         for(int i=1;i<size;i++){
             MPI_Send(&arr[i*delta], delta, MPI_INT, i, 0, MPI_COMM_WORLD);
         }
-      
-        for(i=0;i<n;i++){
+        for(int i=0;i<n;i++){
             float x = (a + (i + 0.5) * ((b-a)/n));
             if(functionid == 1){
                 sum += f1(x,intensity)*((b-a)/n);
@@ -75,7 +74,7 @@ int main (int argc, char* argv[]) {
             sum = sum + recv_sum;
         }
     }else{
-        MPI_Recv(recv_sum, delta, 0, 0 ,);
+        MPI_Recv(recv_sum, delta, 0, 0 ,MPI_COMM_WORLD);
         sum = 0;
         for(i=0;i<n;i++){
             float x = (a + (i + 0.5) * ((b-a)/n));
@@ -94,7 +93,10 @@ int main (int argc, char* argv[]) {
         MPI_Recv(&sum, 1, MPI_INT, 0 ,0 , MPI_COMM_WORLD);
     }
     MPI_Finalize();
+    std::chrono::high_resolution_clock::time_point endTime = std::chrono::high_resolution_clock::now();
     
+    std::chrono::duration<double> elapsed_seconds = endTime-startTime;
+    std::cerr<<elapsed_seconds.count()<<std::endl;
     
     
     
