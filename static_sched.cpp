@@ -4,6 +4,9 @@
 #include <chrono>
 #include <mpi.h>
 
+
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -30,11 +33,14 @@ int main (int argc, char* argv[]) {
     int b = atoi(argv[3]);
     int n = atoi(argv[4]);
     int intensity = atoi(argv[5]);
-    int position = 0;
-    int size = 0;
+    int rank;
+    int size;
     int delta = n / size;
-    int *b = new int[delta];
-    int recv_sum = 0;
+    int *arr = new int[delta];
+    double recv_sum = 0.0;
+    double sum=0.0;
+    
+    
                           
     std::chrono::time_point<std::chrono::system_clock> startTime = std::chrono::system_clock::now();
     MPI_Init (&argc, &argv);
@@ -45,10 +51,10 @@ int main (int argc, char* argv[]) {
                           
     if (rank == 0) {
         
-        for(i=1;i<size;i++){
-            mpi_send(&arr[i*delta], delta, MPI_INT, i, 0, MPI_COMM_WORLD);
+        for(int i=1;i<size;i++){
+            MPI_Send(&arr[i*delta], delta, MPI_INT, i, 0, MPI_COMM_WORLD);
         }
-       int sum = 0;
+      
         for(i=0;i<n;i++){
             float x = (a + (i + 0.5) * ((b-a)/n));
             if(functionid == 1){
@@ -85,12 +91,15 @@ int main (int argc, char* argv[]) {
                  sum += f1(x,intensity)*((b-a)/n);
             }
         }
-        mpi_send(&sum, 1, MPI_INT, 0 ,0 , MPI_COMM_WORLD);
+        MPI_Recv(&sum, 1, MPI_INT, 0 ,0 , MPI_COMM_WORLD);
     }
-    std::chrono::time_point<std::chrono::system_clock> endTime = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds = endTime-start;
-                          
     MPI_Finalize();
+    std::chrono::time_point<std::chrono::system_clock> endTime = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = endTime-startTime;
+    
+    
+    
+    
     if (rank == 0)
     {
         std::cout<<sum<<std::endl;
