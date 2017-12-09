@@ -42,70 +42,56 @@ int main (int argc, char* argv[]) {
     
     
                           
-    std::chrono::time_point<std::chrono::system_clock> startTime = std::chrono::system_clock::now();
     MPI_Init (&argc, &argv);
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
                           
                           
+    std::chrono::time_point<std::chrono::system_clock> startTime = std::chrono::system_clock::now();
                           
-    if (rank == 0) {
         
+	/*
         for(int i=1;i<size;i++){
-            MPI_Send(&arr[i*delta], delta, MPI_INT, i, 0, MPI_COMM_WORLD);
+        
+            MPI_Send(&arr, delta, MPI_INT, i, 0, MPI_COMM_WORLD);
         }
-        for(int i=0;i<n;i++){
-            float x = (a + (i + 0.5) * ((b-a)/n));
-            if(functionid == 1){
-                sum += f1(x,intensity)*((b-a)/n);
-                
-                
-            }else if(functionid == 2){
-                sum += f2(x, intensity)*((b-a)/n);
-            }else if(functionid == 3){
-                sum += f3(x, intensity)*((b-a)/n);
+	*/
+        //for(int i=0;i<n;i++){
+    for(int i=(rank * delta);i<((rank+1)*delta);i++){
+	    float x = (a + (i + 0.5) * ((float)(b-a)/n));
+	    if(functionid == 1){
+		    sum += f1(x,intensity)*((float)(b-a)/n);
 
-            }else if(functionid == 4){
-                sum += f4(x, intensity)*((b-a)/n);
-            }
-        }
+
+	    }else if(functionid == 2){
+		    sum += f2(x, intensity)*(((float)b-a)/n);
+	    }else if(functionid == 3){
+		    sum += f3(x, intensity)*(((float)b-a)/n);
+
+	    }else if(functionid == 4){
+		    sum += f4(x, intensity)*(((float)b-a)/n);
+	    }
+    }
+    if (rank == 0) {
         for(int i=1;i<size;i++){
-            MPI_Recv(&recv_sum, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+            MPI_Status status;
+            MPI_Recv(&recv_sum, 1, MPI_DOUBLE, i, 0, MPI_COMM_WORLD, &status);
             sum = sum + recv_sum;
         }
     }else{
-        MPI_Recv(recv_sum, delta, 0, 0 ,MPI_COMM_WORLD);
-        sum = 0;
-        for(i=0;i<n;i++){
-            float x = (a + (i + 0.5) * ((b-a)/n));
-            if(atoi(argv[1]) == 1){
-                 sum += f1(x,intensity)*((b-a)/n);
-                
-            }else if(atoi(argv[1]) == 2){
-                sum += f1(x,intensity)*((b-a)/n);
-                
-            }else if(atoi(argv[1]) == 3){
-                 sum += f1(x,intensity)*((b-a)/n);
-            }else if(atoi(argv[1]) == 4){
-                 sum += f1(x,intensity)*((b-a)/n);
-            }
-        }
-        MPI_Recv(&sum, 1, MPI_INT, 0 ,0 , MPI_COMM_WORLD);
+	    MPI_Status status;
+            MPI_Send(&sum, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
     }
-    MPI_Finalize();
     std::chrono::high_resolution_clock::time_point endTime = std::chrono::high_resolution_clock::now();
     
     std::chrono::duration<double> elapsed_seconds = endTime-startTime;
-    std::cerr<<elapsed_seconds.count()<<std::endl;
-    
-    
-    
     
     if (rank == 0)
     {
         std::cout<<sum<<std::endl;
         std::cerr<<elapsed_seconds.count()<<std::endl;
     }
+    MPI_Finalize();
   
   return 0;
 }
